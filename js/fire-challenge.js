@@ -163,21 +163,16 @@ function recordResult(name, station, centis, timeStr, competition) {
     
     const gsheetUrl = 'https://script.google.com/macros/s/AKfycbxAuEJeg7ET6gC1IFXDgASi1FsCKhlYyBx7EHB0W1TdD4rtb4e8z2hHbZGinI1xVbf24A/exec';
     console.debug('recordResult payload:', result);
+    setSwStatus('Enviando resultado a Google Sheets...', false);
     fetch(gsheetUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      mode: 'no-cors',
       body: JSON.stringify(result)
     })
-    .then(response => response.text().then(text => {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${text}`);
-      }
-      console.log('Google Sheets sync success', text);
-      setSwStatus('Resultado guardado en Google Sheets', false);
-      return text;
-    }))
+    .then(() => {
+      console.log('Google Sheets request sent (no-cors)');
+      setSwStatus('Resultado enviado a Google Sheets (no se puede leer la respuesta por CORS).', false);
+    })
     .catch(e => {
       console.warn('Google Sheets sync failed', e);
       setSwStatus('Error enviando a Google Sheets: ' + e.message, true);
