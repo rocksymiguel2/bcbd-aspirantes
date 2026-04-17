@@ -160,19 +160,23 @@ function recordResult(name, station, centis, timeStr, competition) {
     list.push(result);
     localStorage.setItem(key, JSON.stringify(list));
     console.debug('Recorded result locally', name, station, timeStr, 'competition:', finalCompetition, 'competencia:', competitionDisplay);
-    setSwStatus('Guardando resultado en Google Sheets...', false);
+    setSwStatus('Subiendo resultado en Base de Datos...', false);
     
     const gsheetUrl = 'https://script.google.com/macros/s/AKfycbxAuEJeg7ET6gC1IFXDgASi1FsCKhlYyBx7EHB0W1TdD4rtb4e8z2hHbZGinI1xVbf24A/exec';
     console.debug('recordResult payload:', result);
-    setSwStatus('subiendo a base de datos...', false);
+    setSwStatus('Subiendo a base de datos...', false);
+    const formBody = new URLSearchParams();
+    Object.entries(result).forEach(([key, value]) => {
+      formBody.append(key, String(value));
+    });
     fetch(gsheetUrl, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify(result)
+      body: formBody
     })
     .then(() => {
       console.log('Google Sheets request sent (no-cors)');
-      setSwStatus('Resultado enviado a Google Sheets.', false);
+      setSwStatus('Resultado enviado a la base de datos.', false);
     })
     .catch(e => {
       console.warn('Google Sheets sync failed', e);
