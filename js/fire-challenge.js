@@ -38,7 +38,30 @@ function initStopwatch(idx) {
     const container = document.createElement('div');
     container.className = 'stopwatch-panel';
     container.style.cssText = 'background: rgba(255,255,255,0.98); border: 2px solid #b71c1c; padding:12px; border-radius:8px; margin:12px 0; box-shadow:0 6px 18px rgba(0,0,0,0.06);';
-    container.innerHTML = '\n      <div class="sw-row" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap;">\n        <label style="flex:1 1 180px; display:flex; flex-direction:column; gap:4px; font-size:14px;">\n          Competencia\n          <select id="competition-select" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">\n            <option value="fire-challenge">Fire Challenge Santo Domingo 2026</option>\n            <option value="copa-oba">Copa OBA 2026</option>\n          </select>\n        </label>\n        <label style="flex:1 1 220px; display:flex; flex-direction:column; gap:4px; font-size:14px;">\n          Nombre del participante\n          <input id="participant-name" placeholder="Nombre participante" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;" />\n        </label>\n        <div id="sw-display" class="sw-display" style="font-size:24px; font-weight:700; font-family:monospace; min-width:120px; text-align:center;">00:00:00</div>\n      </div>\n      <div class="sw-row" style="display:flex; gap:8px; flex-wrap:wrap;">\n        <button id="sw-start" class="primary" style="background:#b71c1c; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer; font-weight:600;">Iniciar</button>\n        <button id="sw-stop" style="background:#666; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Detener</button>\n        <button id="sw-reset" style="background:#999; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Reset</button>\n        <button id="sw-next" class="primary" style="background:#b71c1c; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Siguiente</button>\n      </div>\n      <div style="margin-top:10px; color:#444; font-size:14px;">Competencia seleccionada: <strong>{competitionName}</strong></div>\n    ';
+    container.innerHTML = `
+      <div class="sw-row" style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap;">
+        <label style="flex:1 1 180px; display:flex; flex-direction:column; gap:4px; font-size:14px;">
+          Competencia
+          <select id="competition-select" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            <option value="fire-challenge">Fire Challenge Santo Domingo 2026</option>
+            <option value="copa-oba">Copa OBA 2026</option>
+          </select>
+        </label>
+        <label style="flex:1 1 220px; display:flex; flex-direction:column; gap:4px; font-size:14px;">
+          Nombre del participante
+          <input id="participant-name" placeholder="Nombre participante" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;" />
+        </label>
+        <div id="sw-display" class="sw-display" style="font-size:24px; font-weight:700; font-family:monospace; min-width:120px; text-align:center;">00:00:00</div>
+      </div>
+      <div class="sw-row" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="sw-start" class="primary" style="background:#b71c1c; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer; font-weight:600;">Iniciar</button>
+        <button id="sw-stop" style="background:#666; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Detener</button>
+        <button id="sw-reset" style="background:#999; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Reset</button>
+        <button id="sw-next" class="primary" style="background:#b71c1c; color:white; border:0; padding:10px 16px; border-radius:4px; cursor:pointer;">Siguiente</button>
+      </div>
+      <div style="margin-top:10px; color:#444; font-size:14px;">Competencia seleccionada: <strong>${competitionName}</strong></div>
+      <div id="sw-status" style="margin-top:10px; color:#444; font-size:13px;"></div>
+    `;
     const main = document.getElementById('main-content') || document.body;
     const competitionSelect = container.querySelector('#competition-select');
     if (competitionSelect) {
@@ -105,6 +128,13 @@ function initStopwatch(idx) {
   } catch(e) { console.warn('initStopwatch failed',e); }
 }
 
+function setSwStatus(message, isError) {
+  const statusEl = document.getElementById('sw-status');
+  if (!statusEl) return;
+  statusEl.textContent = message;
+  statusEl.style.color = isError ? '#b71c1c' : '#333';
+}
+
 function recordResult(name, station, centis, timeStr, competition) {
   try {
     const key = 'fc_results';
@@ -129,22 +159,33 @@ function recordResult(name, station, centis, timeStr, competition) {
     list.push(result);
     localStorage.setItem(key, JSON.stringify(list));
     console.debug('Recorded result locally', name, station, timeStr, 'competition:', finalCompetition, 'competencia:', competitionDisplay);
+    setSwStatus('Guardando resultado en Google Sheets...', false);
     
-    // Send to Google Sheets using a simple POST request to avoid CORS preflight.
     const gsheetUrl = 'https://script.google.com/macros/s/AKfycbxAuEJeg7ET6gC1IFXDgASi1FsCKhlYyBx7EHB0W1TdD4rtb4e8z2hHbZGinI1xVbf24A/exec';
     console.debug('recordResult payload:', result);
-    const formBody = new URLSearchParams();
-    Object.entries(result).forEach(([key, value]) => {
-      formBody.append(key, String(value));
-    });
     fetch(gsheetUrl, {
       method: 'POST',
-      body: formBody
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(result)
     })
-    .then(r => r.text())
-    .then(data => console.log('Google Sheets sync success', data))
-    .catch(e => console.warn('Google Sheets sync failed', e));
-  } catch(e) { console.warn('recordResult failed',e); }
+    .then(response => response.text().then(text => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+      console.log('Google Sheets sync success', text);
+      setSwStatus('Resultado guardado en Google Sheets', false);
+      return text;
+    }))
+    .catch(e => {
+      console.warn('Google Sheets sync failed', e);
+      setSwStatus('Error enviando a Google Sheets: ' + e.message, true);
+    });
+  } catch(e) {
+    console.warn('recordResult failed', e);
+    setSwStatus('Error interno al registrar el resultado', true);
+  }
 }
 
 console.log('fire-challenge.js: initStopwatch exposed globally');
