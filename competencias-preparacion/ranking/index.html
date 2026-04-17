@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ranking — Fire Challenge 2026</title>
+  <title>Ranking — Competencias Copa OBA y Fire Challenge 2026</title>
   <script>
     (function(){
       var repoPrefix = location.hostname.includes('github.io') ? '/bcbd-aspirantes' : '';
@@ -42,13 +42,14 @@
   <main id="main-content">
     <section class="home-hero">
       <div class="hero-inner">
-        <h1>Ranking de Entrenamiento— Fire Challenge Santo Domingo 2026</h1>
-        <p class="lead">Ranking de tiempos de las Estaciones de Fire Challenge Santo Domingo 2026. Aquí verás el ranking actualizado, si se ha utilizado la funcion cronometro.</p>
+        <h1>Ranking de Entrenamiento — Competencias Copa OBA y Fire Challenge 2026</h1>
+        <p class="lead">Ranking de tiempos de ambas competencias. Usa el filtro para ver los resultados de Copa OBA o Fire Challenge y revisa los tiempos por estación.</p>
       </div>
     </section>
     <section style="margin:20px 0">
       <h2>Resultados registrados</h2>
-      <p style="margin:8px 0 16px; color:#333;">Ranking por estación. Haz click en el nombre para ver todos los tiempos registrados de cada participante, ordenados de último a primero.</p>
+      <p style="margin:8px 0 16px; color:#333;">Ranking por estación para Copa OBA y Fire Challenge. Usa el filtro para ver los resultados de cada competencia, luego haz click en el nombre para ver todos los tiempos registrados de cada participante.</p>
+      <div id="ranking-controls" style="margin-bottom:18px;"></div>
       <div id="results-panel">
         <p>Cargando resultados de la base de datos...</p>
       </div>
@@ -90,7 +91,40 @@
       }
 
       const competitionFilter = getPageCompetition();
-      
+      const competitionLabels = {
+        'copa-oba': 'Copa OBA 2026',
+        'fire-challenge': 'Fire Challenge Santo Domingo 2026'
+      };
+
+      function getCompetitionLabel(key) {
+        return competitionLabels[key] || String(key || '').trim() || 'Competencia desconocida';
+      }
+
+      function getFilterLink(key) {
+        if (!key) return window.location.pathname;
+        return `${window.location.pathname}?competition=${encodeURIComponent(key)}`;
+      }
+
+      function renderCompetitionFilter() {
+        const panel = document.getElementById('ranking-controls');
+        if (!panel) return;
+        const selected = competitionFilter || '';
+        const buttons = [
+          { key: '', label: 'Todas' },
+          { key: 'copa-oba', label: 'Copa OBA 2026' },
+          { key: 'fire-challenge', label: 'Fire Challenge 2026' }
+        ];
+        const html = ['<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">',
+          '<span style="font-weight:700; color:#111827;">Mostrar:</span>',
+          buttons.map(button => {
+            const active = selected === button.key;
+            return `<a href="${getFilterLink(button.key)}" style="padding:8px 14px; border-radius:999px; text-decoration:none; border:1px solid ${active ? '#b71c1c' : '#d1d5db'}; background:${active ? '#fef2f2' : '#ffffff'}; color:${active ? '#991b1b' : '#374151'}; font-weight:${active ? '700' : '500'};">${escapeHtml(button.label)}</a>`;
+          }).join(''),
+          '</div>'
+        ].join('');
+        panel.innerHTML = html;
+      }
+
       function formatTimeForDisplay(timeValue) {
         try {
           if (typeof timeValue === 'number') {
@@ -211,6 +245,7 @@
       
       function loadAndRender(){
         const panel = document.getElementById('results-panel');
+        renderCompetitionFilter();
         panel.innerHTML = '<p style="text-align:center; color:#666;">Cargando resultados de la base de datos...</p>';
         
         fetch(GSHEET_URL)
@@ -226,7 +261,7 @@
             const stationIndex = findColumnIndex(headers, ['estación', 'estacion', 'station'], 1);
             const timeIndex = findColumnIndex(headers, ['tiempo', 'time', 'duration'], 2);
             const dateIndex = findColumnIndex(headers, ['fecha', 'timestamp', 'ts', 'date'], 3);
-            const competitionIndex = findColumnIndex(headers, ['competencia', 'competition'], -1);
+            const competitionIndex = findColumnIndex(headers, ['competencia', 'competition', 'competition_display'], -1);
             const results = rows.filter(row => {
               if (Array.isArray(row)) {
                 return row.length > Math.max(nameIndex, stationIndex, timeIndex, dateIndex, competitionIndex);
@@ -240,7 +275,7 @@
               return;
             }
             
-            const stationGroups = {};
+            const competitionGroups = {};
             results.forEach(row => {
               const name = String(getRowValue(row, nameIndex, headers[nameIndex]) ?? '').trim();
               if (!name) return;
@@ -251,22 +286,37 @@
               if (!competitionKey) {
                 competitionKey = competitionFilter || '';
               }
+              if (!competitionKey) {
+                if (competitionRaw && typeof competitionRaw === 'string' && competitionRaw.trim()) {
+                  competitionKey = 'unknown';
+                } else {
+                  competitionKey = 'unknown';
+                }
+              }
               if (competitionFilter && competitionKey !== competitionFilter) return;
+              const competitionDisplay = competitionKey && competitionLabels[competitionKey]
+                ? competitionLabels[competitionKey]
+                : String(competitionRaw || '').trim() || 'Competencia desconocida';
               const timeStr = formatTimeForDisplay(getRowValue(row, timeIndex, headers[timeIndex]));
               const centis = parseTimeToCentis(getRowValue(row, timeIndex, headers[timeIndex]));
               if (!isFinite(centis)) return;
               const dateValue = row[dateIndex];
               const dateMillis = Date.parse(dateValue) || 0;
-              const entry = { name, stationKey, competitionKey, timeStr, centis, dateValue, dateMillis };
-              if (!stationGroups[stationKey]) {
-                stationGroups[stationKey] = { entries: [], runners: {} };
+              const entry = { name, stationKey, competitionKey, competitionDisplay, timeStr, centis, dateValue, dateMillis };
+              if (!competitionGroups[competitionKey]) {
+                competitionGroups[competitionKey] = { competitionKey, competitionDisplay, stations: {}, totalEntries: 0 };
               }
-              stationGroups[stationKey].entries.push(entry);
+              const compGroup = competitionGroups[competitionKey];
+              compGroup.totalEntries += 1;
+              if (!compGroup.stations[stationKey]) {
+                compGroup.stations[stationKey] = { entries: [], runners: {} };
+              }
+              compGroup.stations[stationKey].entries.push(entry);
               const runnerKey = name.toLowerCase().trim();
-              if (!stationGroups[stationKey].runners[runnerKey]) {
-                stationGroups[stationKey].runners[runnerKey] = { name, bestEntry: entry, allEntries: [entry] };
+              if (!compGroup.stations[stationKey].runners[runnerKey]) {
+                compGroup.stations[stationKey].runners[runnerKey] = { name, bestEntry: entry, allEntries: [entry] };
               } else {
-                const runner = stationGroups[stationKey].runners[runnerKey];
+                const runner = compGroup.stations[stationKey].runners[runnerKey];
                 runner.allEntries.push(entry);
                 const currentBest = runner.bestEntry;
                 if (entry.centis < currentBest.centis || (entry.centis === currentBest.centis && entry.dateMillis > currentBest.dateMillis)) {
@@ -275,59 +325,67 @@
               }
             });
             
-            const stationKeys = Object.keys(stationGroups).sort((a, b) => {
-              const numA = parseInt(a.match(/(\d+)/)?.[1] || '', 10);
-              const numB = parseInt(b.match(/(\d+)/)?.[1] || '', 10);
-              if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-              return a.localeCompare(b);
-            });
+            const orderedCompetitionKeys = ['copa-oba', 'fire-challenge', 'unknown'].filter(key => competitionGroups[key]);
+            if (orderedCompetitionKeys.length === 0) {
+              panel.innerHTML = '<p style="text-align:center; color:#999;">No hay resultados registrados para esta competencia.</p>';
+              return;
+            }
             
             let html = '';
-            stationKeys.forEach(stationKey => {
-              const group = stationGroups[stationKey];
-              const avgCentis = Math.round(group.entries.reduce((sum, item) => sum + item.centis, 0) / group.entries.length);
-              const avgLabel = group.entries.length ? formatTimeForDisplay(avgCentis) : '-';
-              const runners = Object.values(group.runners).sort((a, b) => {
-                if (a.bestEntry.centis !== b.bestEntry.centis) return a.bestEntry.centis - b.bestEntry.centis;
-                return a.name.localeCompare(b.name);
+            orderedCompetitionKeys.forEach(compKey => {
+              const group = competitionGroups[compKey];
+              const stationKeys = Object.keys(group.stations).sort((a, b) => {
+                const numA = parseInt(a.match(/(\d+)/)?.[1] || '', 10);
+                const numB = parseInt(b.match(/(\d+)/)?.[1] || '', 10);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
               });
-              
-              html += `<section style="margin-bottom:28px; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#ffffff; box-shadow:0 1px 2px rgba(15,23,42,0.05);">`;
-              html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:16px 18px; background:#f8fafc; border-bottom:1px solid #e5e7eb;">`;
-              html += `<div style="font-weight:700; font-size:1rem;">${escapeHtml(stationKey)}</div>`;
-              html += `<div style="color:#374151; font-size:.95rem;">Promedio de estación: <strong>${escapeHtml(avgLabel)}</strong></div>`;
+              html += `<section style="margin-bottom:32px; padding:0; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#ffffff; box-shadow:0 1px 2px rgba(15,23,42,0.05);">`;
+              html += `<div style="padding:18px; background:#f8fafc; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">`;
+              html += `<div style="font-weight:700; font-size:1rem;">${escapeHtml(group.competitionDisplay)}</div>`;
+              html += `<div style="color:#374151; font-size:.95rem;">Registros: <strong>${group.totalEntries}</strong></div>`;
               html += `</div>`;
-              html += `<table style="width:100%; border-collapse:collapse;">`;
-              html += `<thead><tr style="background:#f3f4f6; border-bottom:2px solid #d1d5db;">`;
-              html += `<th style="padding:14px 18px; text-align:left; font-weight:600;">Nombre</th>`;
-              html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Mejor tiempo</th>`;
-              html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Fecha</th>`;
-              html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Registros</th>`;
-              html += `</tr></thead><tbody>`;
-              
-              runners.forEach((runner, runnerIdx) => {
-                const bgColor = runnerIdx % 2 === 0 ? '#ffffff' : '#f9fafb';
-                const best = runner.bestEntry;
-                const entriesSorted = runner.allEntries.slice().sort((a, b) => b.dateMillis - a.dateMillis);
-                const detailsList = entriesSorted.map(entry => `<li style="margin:0 0 4px; padding:0;">${escapeHtml(formatDate(entry.dateValue))} — <strong>${escapeHtml(entry.timeStr)}</strong></li>`).join('');
-                html += `<tr style="background:${bgColor}; border-bottom:1px solid #e5e7eb;">`;
-                html += `<td style="padding:12px 18px; text-align:left;">`;
-                html += `<button type="button" class="runner-toggle" style="background:none;border:none;color:#1d4ed8;cursor:pointer;padding:0;font:inherit;text-align:left;">${escapeHtml(runner.name)}</button>`;
-                html += `</td>`;
-                html += `<td style="padding:12px 18px; text-align:center; font-weight:600; color:#b71c1c;">${escapeHtml(best.timeStr)}</td>`;
-                html += `<td style="padding:12px 18px; text-align:center; color:#475569;">${escapeHtml(formatDate(best.dateValue))}</td>`;
-                html += `<td style="padding:12px 18px; text-align:center; color:#475569;">${entriesSorted.length}</td>`;
-                html += `</tr>`;
-                html += `<tr class="runner-details" style="display:none; background:#f8fafc;">`;
-                html += `<td colspan="4" style="padding:12px 18px 18px 42px; color:#334155; font-size:.95rem;">`;
-                html += `<div style="margin-bottom:8px; font-weight:600;">Tiempos ordenados de último a primero:</div>`;
-                html += `<ul style="margin:0; padding-left:18px;">${detailsList}</ul>`;
-                html += `</td></tr>`;
+              stationKeys.forEach(stationKey => {
+                const groupStation = group.stations[stationKey];
+                const avgCentis = Math.round(groupStation.entries.reduce((sum, item) => sum + item.centis, 0) / groupStation.entries.length);
+                const avgLabel = groupStation.entries.length ? formatTimeForDisplay(avgCentis) : '-';
+                const runners = Object.values(groupStation.runners).sort((a, b) => {
+                  if (a.bestEntry.centis !== b.bestEntry.centis) return a.bestEntry.centis - b.bestEntry.centis;
+                  return a.name.localeCompare(b.name);
+                });
+                html += `<div style="padding:18px; border-top:1px solid #e5e7eb;">`;
+                html += `<div style="font-weight:700; font-size:1rem; margin-bottom:8px;">${escapeHtml(stationKey)}</div>`;
+                html += `<div style="margin-bottom:14px; color:#475569;">Promedio de estación: <strong>${escapeHtml(avgLabel)}</strong></div>`;
+                html += `<table style="width:100%; border-collapse:collapse;">`;
+                html += `<thead><tr style="background:#f3f4f6; border-bottom:2px solid #d1d5db;">`;
+                html += `<th style="padding:14px 18px; text-align:left; font-weight:600;">Nombre</th>`;
+                html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Mejor tiempo</th>`;
+                html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Fecha</th>`;
+                html += `<th style="padding:14px 18px; text-align:center; font-weight:600;">Registros</th>`;
+                html += `</tr></thead><tbody>`;
+                runners.forEach((runner, runnerIdx) => {
+                  const bgColor = runnerIdx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                  const best = runner.bestEntry;
+                  const entriesSorted = runner.allEntries.slice().sort((a, b) => b.dateMillis - a.dateMillis);
+                  const detailsList = entriesSorted.map(entry => `<li style="margin:0 0 4px; padding:0;">${escapeHtml(formatDate(entry.dateValue))} — <strong>${escapeHtml(entry.timeStr)}</strong></li>`).join('');
+                  html += `<tr style="background:${bgColor}; border-bottom:1px solid #e5e7eb;">`;
+                  html += `<td style="padding:12px 18px; text-align:left;">`;
+                  html += `<button type="button" class="runner-toggle" style="background:none;border:none;color:#1d4ed8;cursor:pointer;padding:0;font:inherit;text-align:left;">${escapeHtml(runner.name)}</button>`;
+                  html += `</td>`;
+                  html += `<td style="padding:12px 18px; text-align:center; font-weight:600; color:#b71c1c;">${escapeHtml(best.timeStr)}</td>`;
+                  html += `<td style="padding:12px 18px; text-align:center; color:#475569;">${escapeHtml(formatDate(best.dateValue))}</td>`;
+                  html += `<td style="padding:12px 18px; text-align:center; color:#475569;">${entriesSorted.length}</td>`;
+                  html += `</tr>`;
+                  html += `<tr class="runner-details" style="display:none; background:#f8fafc;">`;
+                  html += `<td colspan="4" style="padding:12px 18px 18px 42px; color:#334155; font-size:.95rem;">`;
+                  html += `<div style="margin-bottom:8px; font-weight:600;">Tiempos ordenados de último a primero:</div>`;
+                  html += `<ul style="margin:0; padding-left:18px;">${detailsList}</ul>`;
+                  html += `</td></tr>`;
+                });
+                html += `</tbody></table></div>`;
               });
-              
-              html += `</tbody></table></section>`;
+              html += `</section>`;
             });
-            
             panel.innerHTML = html;
             document.querySelectorAll('.runner-toggle').forEach(button => {
               button.addEventListener('click', function() {
