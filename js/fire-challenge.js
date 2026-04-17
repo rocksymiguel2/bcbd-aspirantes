@@ -168,11 +168,12 @@ function recordResult(name, station, centis, timeStr, competition) {
     const gsheetUrl = 'https://script.google.com/macros/s/AKfycbwQu6k67mz-TBwGsv2tBhiCq5CYuD0c7LmsBDg-g41f-xcGjm5JGO5l_7UnTVT7tiW5ew/exec';
     console.debug('recordResult payload:', result);
     setSwStatus('Subiendo a base de datos...', false);
+    const formBody = new URLSearchParams();
+    Object.entries(result).forEach(([k, v]) => formBody.append(k, String(v)));
     fetch(gsheetUrl, {
       method: 'POST',
       mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(result)
+      body: formBody
     })
     .then(response => {
       if (!response.ok) throw new Error('HTTP ' + response.status);
