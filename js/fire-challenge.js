@@ -147,7 +147,7 @@ function recordResult(name, station, centis, timeStr, competition) {
       nombre: name,
       station,
       estacion: station,
-      competition: finalCompetition,
+      competition: competitionDisplay,
       competition_display: competitionDisplay,
       competencia: competitionDisplay,
       competition_key: finalCompetition,
@@ -164,7 +164,7 @@ function recordResult(name, station, centis, timeStr, competition) {
     
     const gsheetUrl = 'https://script.google.com/macros/s/AKfycbxAuEJeg7ET6gC1IFXDgASi1FsCKhlYyBx7EHB0W1TdD4rtb4e8z2hHbZGinI1xVbf24A/exec';
     console.debug('recordResult payload:', result);
-    setSwStatus('Enviando resultado a Google Sheets...', false);
+    setSwStatus('subiendo a base de datos...', false);
     fetch(gsheetUrl, {
       method: 'POST',
       mode: 'no-cors',
@@ -172,11 +172,11 @@ function recordResult(name, station, centis, timeStr, competition) {
     })
     .then(() => {
       console.log('Google Sheets request sent (no-cors)');
-      setSwStatus('Resultado enviado a Google Sheets (no se puede leer la respuesta por CORS).', false);
+      setSwStatus('Resultado enviado a Google Sheets.', false);
     })
     .catch(e => {
       console.warn('Google Sheets sync failed', e);
-      setSwStatus('Error enviando a Google Sheets: ' + e.message, true);
+      setSwStatus('Error enviando a base de datos: ' + e.message, true);
     });
   } catch(e) {
     console.warn('recordResult failed', e);
