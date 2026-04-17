@@ -148,6 +148,7 @@ function recordResult(name, station, centis, timeStr, competition) {
       station,
       estacion: station,
       competition: finalCompetition,
+      competition_display: competitionDisplay,
       competencia: competitionDisplay,
       competition_key: finalCompetition,
       centis,
