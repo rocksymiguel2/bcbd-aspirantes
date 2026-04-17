@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Estación #1 — Fire Challenge 2026</title>
+    <script>
+        (function () {
+            var repoPrefix = location.hostname.includes('github.io') ? '/bcbd-aspirantes' : '';
+            var head = document.getElementsByTagName('head')[0];
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            var rel = '';
+            if (repoPrefix) {
+                link.href = repoPrefix + '/css/styles.css';
+            } else {
+                var segs = location.pathname.split('/').filter(Boolean);
+                var repoName = 'bcbd-aspirantes';
+                var repoIndex = segs.lastIndexOf(repoName);
+                var depth = 0;
+                if (repoIndex !== -1) {
+                    depth = segs.length - (repoIndex + 1);
+                    if (segs.length && segs[segs.length - 1].indexOf('.') !== -1) depth = Math.max(0, depth - 1);
+                } else {
+                    depth = segs.length;
+                    if (segs.length && segs[segs.length - 1].indexOf('.') !== -1) depth = Math.max(0, depth - 1);
+                }
+                rel = '../'.repeat(depth);
+                link.href = rel + 'css/styles.css';
+            }
+            head.appendChild(link);
+            // load layout and page script at end of body to preserve execution order
+            var layout = document.createElement('script'); layout.defer = true; layout.src = repoPrefix ? repoPrefix + '/js/layout.js' : rel + 'js/layout.js'; head.appendChild(layout);
+            var fc = document.createElement('script'); fc.defer = true; fc.src = repoPrefix ? repoPrefix + '/js/fire-challenge.js' : rel + 'js/fire-challenge.js'; head.appendChild(fc);
+        })();
+    </script>
+</head>
+
+<body>
+    <div id="header"></div>
+    <main id="main-content" data-station-index="1">
+        <section class="home-hero">
+            <div class="hero-inner">
+                <h1>Estación #1</h1>
+                <p class="lead">Entrada Forzada y Tendido enrollado simple de manguera de 2 ½ pulgadas.</p>
+            </div>
+        </section>
+        <section class="overview">
+            <h2>Pasos</h2>
+            <div class="station-steps">
+                <article class="step">
+                    <div class="step-badge">1</div>
+                    <div class="step-body">
+                        <h3>Lanzamiento del tramo</h3>
+                        <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/lanzamiento-de-tramo.png"
+                            alt="Lanzamiento de tramo" />
+                    </div>
+                </article>
+
+                <article class="step">
+                    <div class="step-badge">2</div>
+                    <div class="step-body">
+                        <h3>Enrollado del tramo</h3>
+                        <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/enrollado-de-tramo.png"
+                            alt="Enrollado de tramo" />
+                    </div>
+                </article>
+
+                <article class="step">
+                    <div class="step-badge">3</div>
+                    <div class="step-body">
+                        <h3>Zona Asignada</h3>
+                        <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/zona asignada.png"
+                            alt="Zona Asignada" />
+                    </div>
+                </article>
+            </div>
+
+            <h2>Indicaciones</h2>
+            <ul class="indicaciones">
+                <li>El enrollado debe ser sin pliegue; debe estar bien enrollado.</li>
+                <li> </li>
+                <li><strong>Zona Asignada </strong></li>
+                <li> Colocar el tramo en la zona asignada <strong>"de pie" o "en vertical"</strong>.</li>
+                <li> Si el tramo cae existirá una penalización.</li>
+                <li> Si el tramo cae fuera del área o el participante lo coloca fuera del área asignada, el equipo
+                    tendrá una penalización de <strong>2 segundos</strong>.</li>
+            </ul>
+        </section>
+    </main>
+    <div id="footer"></div>
+</body>
+
+<script>
+    // Fallback nav creation: ensure prev/next buttons appear even if external JS didn't run
+    (function () {
+        function ensureNav() {
+            try {
+                var main = document.querySelector('[data-station-index]');
+                if (!main) return;
+                var idx = parseInt(main.getAttribute('data-station-index'), 10);
+                if (isNaN(idx)) return;
+                // don't duplicate
+                if (document.querySelector('.station-nav')) return;
+
+                var prev = document.createElement('button');
+                prev.className = 'nav-arrow prev-arrow'; prev.innerHTML = '<span class="arrow-icon">←</span><span class="arrow-text">Anterior</span>';
+                prev.disabled = idx <= 1;
+                prev.addEventListener('click', function () { if (idx > 1) { var segs = location.pathname.split('/').filter(Boolean); var estIndex = segs.findIndex(s => s.toLowerCase() === 'estaciones'); var prefix = estIndex >= 0 ? ('/' + segs.slice(0, estIndex + 1).join('/') + '/') : '/Estaciones/'; location.href = prefix + 'estacion' + (idx - 1) + '/index.html?recorrido=1'; } });
+
+                var next = document.createElement('button');
+                next.className = 'nav-arrow next-arrow'; next.innerHTML = '<span class="arrow-text">Siguiente</span><span class="arrow-icon">→</span>';
+                next.disabled = idx >= 5;
+                next.addEventListener('click', function () { if (idx < 5) { var segs = location.pathname.split('/').filter(Boolean); var estIndex = segs.findIndex(s => s.toLowerCase() === 'estaciones'); var prefix = estIndex >= 0 ? ('/' + segs.slice(0, estIndex + 1).join('/') + '/') : '/Estaciones/'; location.href = prefix + 'estacion' + (idx + 1) + '/index.html?recorrido=1'; } });
+
+                var wrap = document.createElement('div'); wrap.className = 'station-nav'; wrap.appendChild(prev); wrap.appendChild(next); document.body.appendChild(wrap);
+            } catch (e) { console.warn('ensureNav failed', e) }
+        }
+        if (document.readyState === 'complete' || document.readyState === 'interactive') ensureNav(); else document.addEventListener('DOMContentLoaded', ensureNav);
+    })();
+</script>
+
+<script>
+    // Ensure stopwatch runs in case global loader didn't initialize it
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            var el = document.querySelector('[data-station-index]');
+            if (!el) return;
+            var idx = parseInt(el.getAttribute('data-station-index'), 10);
+            if (window.initStopwatch) window.initStopwatch(idx);
+        } catch (e) { console.warn('fallback initStopwatch failed', e) }
+    });
+</script>
+
+</body>
+
+</html>

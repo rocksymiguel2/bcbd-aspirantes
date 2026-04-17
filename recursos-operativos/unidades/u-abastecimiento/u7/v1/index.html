@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Unidad U-7 - Cuartel 2 Daule (v1)</title>
+  <link rel="stylesheet" href="../../../css/styles.css">
+
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div id="header"></div>
+
+  <h1>Unidad U7 - Cuartel 2 Daule</h1>
+  <p><a href="./v2/index.html">Abrir U7 v2 (experimental)</a></p>
+  <p>Haz clic en un compartimiento para ver su contenido.</p>
+  <p>HINO 500</p>
+
+  <div id="contenedor">
+    <svg id="unidadU7" viewBox="0 0 600 400" width="100%" height="auto">
+      <g id="unidad" fill="#d32f2f" stroke="black" stroke-width="2">
+
+        <!-- Lado izquierdo -->
+        <rect id="comp1" x="10" y="10" width="45" height="45" />
+        <rect id="comp2" x="10" y="120" width="45" height="45" />
+        <rect id="comp3" x="10" y="175" width="45" height="45" />
+        <rect id="comp4" x="10" y="230" width="45" height="45" />
+        <rect id="comp5" x="10" y="288" width="45" height="45" />
+
+        <!-- Lado derecho -->
+        <rect id="comp6" x="550" y="230" width="45" height="45" />
+        <rect id="comp7" x="550" y="10" width="45" height="45" />
+        <rect id="comp8" x="550" y="65" width="45" height="45" />
+        <rect id="comp9" x="550" y="120" width="45" height="45" />
+        <rect id="comp10" x="550" y="175" width="45" height="45" />
+        <rect id="comp11" x="550" y="285" width="45" height="45" />
+      </g>
+
+      <!-- Números -->
+      <g fill="white" font-size="18" font-family="Arial" text-anchor="middle">
+        <text x="32" y="40">C-1</text>
+        <text x="32" y="150">C-2</text>
+        <text x="32" y="205">C-3</text>
+        <text x="32" y="260">C-4</text>
+        <text x="32" y="315">C-5</text>
+
+        <text x="572.5" y="40">C-11</text>
+        <text x="572.5" y="95">C-10</text>
+        <text x="572.5" y="150">C-9</text>
+        <text x="572.5" y="205">C-8</text>
+        <text x="572.5" y="260">C-7</text>
+        <text x="572.5" y="315">C-6</text>
+      </g>
+    </svg>
+  </div>
+
+  <div id="info">
+    <h2>Detalles del compartimiento</h2>
+    <ul id="lista"></ul>
+  </div>
+  <div id="footer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="../../../js/main.js"></script>
+  <script src="../../../js/layout.js"></script>
+
+
+</body>
+
+</html>

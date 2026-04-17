@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Estación #3 — Fire Challenge 2026</title>
+  <script>
+      (function(){
+        var repoPrefix = location.hostname.includes('github.io') ? '/bcbd-aspirantes' : '';
+        var head = document.getElementsByTagName('head')[0];
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        var rel = '';
+        if (repoPrefix) {
+          link.href = repoPrefix + '/css/styles.css';
+        } else {
+          var segs = location.pathname.split('/').filter(Boolean);
+          var repoName = 'bcbd-aspirantes';
+          var repoIndex = segs.lastIndexOf(repoName);
+          var depth = 0;
+          if (repoIndex !== -1) {
+            depth = segs.length - (repoIndex + 1);
+            if (segs.length && segs[segs.length - 1].indexOf('.') !== -1) depth = Math.max(0, depth - 1);
+          } else {
+            depth = segs.length;
+            if (segs.length && segs[segs.length - 1].indexOf('.') !== -1) depth = Math.max(0, depth - 1);
+          }
+          rel = '../'.repeat(depth);
+          link.href = rel + 'css/styles.css';
+        }
+        head.appendChild(link);
+        var layout = document.createElement('script'); layout.defer = true; layout.src = repoPrefix ? repoPrefix + '/js/layout.js' : rel + 'js/layout.js'; head.appendChild(layout);
+        var fc = document.createElement('script'); fc.defer = true; fc.src = repoPrefix ? repoPrefix + '/js/fire-challenge.js' : rel + 'js/fire-challenge.js'; head.appendChild(fc);
+      })();
+  </script>
+</head>
+<body>
+  <div id="header"></div>
+  <main id="main-content" data-station-index="3">
+    <section class="home-hero">
+      <div class="hero-inner">
+        <h1>Estación #3</h1>
+        <p class="lead">Kaiser, zigzag, estirar tramo y pitonear al blanco.</p>
+      </div>
+    </section>
+    <section class="overview">
+      <h2>Pasos</h2>
+      <div class="station-steps">
+        <article class="step">
+          <div class="step-badge">1</div>
+          <div class="step-body">
+            <h3>Kaiser</h3>
+            <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/kaiser.png" alt="Kaiser" />
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-badge">2</div>
+          <div class="step-body">
+            <h3>Zigzag</h3>
+            <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/zigzag.png" alt="Zigzag" />
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-badge">3</div>
+          <div class="step-body">
+            <h3>Estirar el tramo de 1 1/2" presurizado</h3>
+            <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/estirar-tramo.png" alt="Estirar tramo" />
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-badge">4</div>
+          <div class="step-body">
+            <h3>Pitonear al blanco</h3>
+            <img src="/bcbd-aspirantes/competencias-preparacion/illustraciones/pitonear-blanco.png" alt="Pitonear al blanco" />
+          </div>
+        </article>
+      </div>
+
+      <h2>Indicaciones</h2>
+      <ul class="indicaciones">
+        <li><strong>Kaiser</strong></li>
+        <li>* Se debe golpear el peso hasta que el mismo recorra un metro.</li>
+        <li>* Solo puedes golpear el peso, si golpeas la estructura o "al aire" se tendrá una penalización de 2 segundos por golpe.</li>
+        <li>* Dejar la mandarria en la zona designada, caso contrario penalización de 5 segundos.</li>
+        <li><strong>Zigzag</strong></li>
+        <li>* Se debe recorrer por la parte externa, todos y cada uno de los conos; si no se lo hace o pasa por encima de uno, penalización de 5 segundos.</li>
+        <li><strong>Estirar el tramo</strong></li>
+        <li>* Agarras el pitón y cruzas en medio de la pista de conos; si mueves uno de los conos con el tramo, fuera de su zona, penalización de 2 segundos.</li>
+        <li><strong>Pitonear al blanco</strong></li>
+        <li>* Pitonear solamente en la zona asignada.</li>
+        <li>* Pasar una compuerta para pitonear al blanco.</li>
+        <li>* Pitonear antes de la apertura de la puerta, penalización de 2 segundos.</li>
+        <li>* Abrir el pitón antes de llegar al punto indicado, penalización de 2 segundos.</li>
+        <li>* Una vez acertado el blanco, cerrar el pitón y colocarlo suavemente en la zona designada.</li>
+        <li>* Botar el pitón al piso, 2 segundos de penalización.</li>
+        <li>* Dejar el pitón abierto, 2 segundos de penalización.</li>
+      </ul>
+    </section>
+  </main>
+  <div id="footer"></div>
+  
+<script>
+// Fallback nav for estacion3
+(function(){
+  function ensureNav(){
+    try{
+      var main = document.querySelector('[data-station-index]'); if(!main) return; var idx=parseInt(main.getAttribute('data-station-index'),10); if(isNaN(idx)) return; if(document.querySelector('.station-nav')) return;
+      var prev = document.createElement('button'); prev.className='nav-arrow prev-arrow'; prev.innerHTML='<span class="arrow-icon">←</span><span class="arrow-text">Anterior</span>'; prev.disabled = idx<=1; prev.addEventListener('click', function(){ if(idx>1){ var segs=location.pathname.split('/').filter(Boolean); var estIndex = segs.findIndex(s=>s.toLowerCase()==='estaciones'); var prefix = estIndex>=0?('/'+segs.slice(0,estIndex+1).join('/')+'/'):'/Estaciones/'; location.href = prefix + 'estacion'+(idx-1) + '/index.html?recorrido=1'; }});
+      var next = document.createElement('button'); next.className='nav-arrow next-arrow'; next.innerHTML='<span class="arrow-text">Siguiente</span><span class="arrow-icon">→</span>'; next.disabled = idx>=5; next.addEventListener('click', function(){ if(idx<5){ var segs=location.pathname.split('/').filter(Boolean); var estIndex = segs.findIndex(s=>s.toLowerCase()==='estaciones'); var prefix = estIndex>=0?('/'+segs.slice(0,estIndex+1).join('/')+'/'):'/Estaciones/'; location.href = prefix + 'estacion'+(idx+1) + '/index.html?recorrido=1'; }});
+      var wrap = document.createElement('div'); wrap.className='station-nav'; wrap.appendChild(prev); wrap.appendChild(next); document.body.appendChild(wrap);
+    }catch(e){console.warn('ensureNav failed',e)}
+  }
+  if(document.readyState==='complete' || document.readyState==='interactive') ensureNav(); else document.addEventListener('DOMContentLoaded', ensureNav);
+})();
+</script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    try{ var el=document.querySelector('[data-station-index]'); if(!el) return; var idx=parseInt(el.getAttribute('data-station-index'),10); if(window.initStopwatch) window.initStopwatch(idx);}catch(e){console.warn('fallback initStopwatch failed',e)}
+  });
+  </script>
+
+</html>
