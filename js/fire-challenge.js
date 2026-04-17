@@ -67,9 +67,12 @@ function initStopwatch(idx) {
     if (competitionSelect) {
       competitionSelect.value = competitionKey;
     }
-    const stationSteps = main.querySelector('.station-steps');
-    console.log('initStopwatch: stationSteps found=', !!stationSteps);
-    if (stationSteps && stationSteps.parentNode) {
+    const overviewSection = main.querySelector('.overview');
+    const stationSteps = overviewSection ? overviewSection.querySelector('.station-steps') : main.querySelector('.station-steps');
+    console.log('initStopwatch: stationSteps found=', !!stationSteps, 'overviewSection=', !!overviewSection);
+    if (overviewSection && overviewSection.parentNode) {
+      overviewSection.parentNode.insertBefore(container, overviewSection);
+    } else if (stationSteps && stationSteps.parentNode) {
       stationSteps.parentNode.insertBefore(container, stationSteps);
     } else {
       const firstSection = main.querySelector('section');
