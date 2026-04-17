@@ -162,7 +162,7 @@ function recordResult(name, station, centis, timeStr, competition) {
     console.debug('Recorded result locally', name, station, timeStr, 'competition:', finalCompetition, 'competencia:', competitionDisplay);
     setSwStatus('Subiendo resultado en Base de Datos...', false);
     
-    const gsheetUrl = 'https://script.google.com/macros/s/AKfycbxAuEJeg7ET6gC1IFXDgASi1FsCKhlYyBx7EHB0W1TdD4rtb4e8z2hHbZGinI1xVbf24A/exec';
+    const gsheetUrl = 'https://script.google.com/macros/s/AKfycbwQu6k67mz-TBwGsv2tBhiCq5CYuD0c7LmsBDg-g41f-xcGjm5JGO5l_7UnTVT7tiW5ew/exec';
     console.debug('recordResult payload:', result);
     setSwStatus('Subiendo a base de datos...', false);
     const formBody = new URLSearchParams();
